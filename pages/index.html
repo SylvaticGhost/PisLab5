@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ПІС ЛАБ5</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      button {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      .result {
+        margin-top: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        min-height: 100px;
+        display: none;
+      }
+      select {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Отримати ціну</h2>
+
+      <div class="form-group">
+        <label for="productSelect">Виберіть продукт:</label>
+        <select id="productSelect">
+          <option value="oat">Oat Futures</option>
+          <option value="soybean_meal">Soybean Meal Futures</option>
+          <option value="rough_rice">Rough Rice Futures</option>
+        </select>
+      </div>
+
+      <button id="fetchButton">Отримати ціну</button>
+
+      <div id="result" class="result">
+        <p>Результати з'являться тут...</p>
+      </div>
+
+      <div id="loading" style="display: none">Завантаження...</div>
+    </div>
+
+    <script>
+      document
+        .getElementById("fetchButton")
+        .addEventListener("click", function () {
+          const productSelect = document.getElementById("productSelect");
+          const resultDiv = document.getElementById("result");
+          const loadingDiv = document.getElementById("loading");
+
+          const productName = productSelect.value;
+
+          loadingDiv.style.display = "block";
+          resultDiv.style.display = "none";
+
+          // Changed to use our server's proxy endpoint
+          fetch(`/api/commodity?name=${encodeURIComponent(productName)}`)
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error("Помилка мережі: " + response.status);
+              }
+              return response.json();
+            })
+            .then((data) => {
+              loadingDiv.style.display = "none";
+              resultDiv.style.display = "block";
+
+              let html = "<h3>Результат:</h3>";
+              if (data) {
+                html += "<p>Назва: " + data.name + "</p>";
+                html += "<p>exchange: " + data.exchange + "</p>";
+                html += "<p>price: " + data.price + "</p>";
+              } else {
+                html += "<p>Не знайдено даних для вибраного продукту</p>";
+              }
+
+              resultDiv.innerHTML = html;
+            })
+            .catch((error) => {
+              loadingDiv.style.display = "none";
+              resultDiv.style.display = "block";
+              resultDiv.innerHTML =
+                '<p style="color: red;">Помилка: ' + error.message + "</p>";
+            });
+        });
+    </script>
+  </body>
+</html>
